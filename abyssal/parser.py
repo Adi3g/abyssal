@@ -1,4 +1,3 @@
-from lib2to3.pytree import Node
 import re
 from typing import List
 from abyssal.exceptions import ParseException
@@ -7,7 +6,7 @@ from abyssal.nodes.variable_node import VariableNode
 from abyssal.nodes.limit_node import LimitNode
 from abyssal.nodes.operation_node import OperationNode
 from abyssal.nodes.function_node import FunctionNode
-
+from abyssal.nodes.base_node import Node
 class LatexParser:
     """
     Parser for converting LaTeX expressions into an AST (abstract syntax tree).
