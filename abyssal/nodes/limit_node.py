@@ -1,5 +1,5 @@
-from .base_node import Node
 from sympy import symbols, limit as sympy_limit
+from .base_node import Node
 
 class LimitNode(Node):
     """
@@ -25,6 +25,7 @@ class LimitNode(Node):
         :param params: A dictionary mapping variable names to values.
         :return: The result of the limit operation.
         """
-        var = symbols(self.variable)
-        expr = self.expression.evaluate(params)
+        # Use sympy to symbolically calculate the limit
+        var = symbols(self.variable)  # Define the variable symbolically
+        expr = self.expression.evaluate(params)  # Evaluate the expression without 'x'
         return float(sympy_limit(expr, var, self.point))

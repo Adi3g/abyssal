@@ -28,15 +28,15 @@ class OperationNode(Node):
         """
         left_value = self.left.evaluate(params)
         right_value = self.right.evaluate(params)
+        if self.operator in ('^', '**'):  # Handle both ^ and ** for exponentiation
+            return left_value ** right_value
         if self.operator == '+':
             return left_value + right_value
-        elif self.operator == '-':
+        if self.operator == '-':
             return left_value - right_value
-        elif self.operator == '*':
+        if self.operator == '*':
             return left_value * right_value
-        elif self.operator == '/':
+        if self.operator == '/':
             return left_value / right_value
-        elif self.operator == '^':
-            return left_value ** right_value
-        else:
-            raise ParseException(f"Unsupported operator: {self.operator}")
+        
+        raise ParseException(f"Unsupported operator: {self.operator}")
