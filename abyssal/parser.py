@@ -1,6 +1,7 @@
 import re
 from typing import List
 from abyssal.exceptions import ParseException
+from abyssal.nodes.integral_node import IntegralNode
 from abyssal.nodes.number_node import NumberNode
 from abyssal.nodes.variable_node import VariableNode
 from abyssal.nodes.limit_node import LimitNode
@@ -59,7 +60,6 @@ class LatexParser:
             else:
                 raise ParseException(f"Invalid token: {token}")
 
-
         if tokens[0] == '\\frac':
             # Handle fractions like \frac{numerator}{denominator}
             if len(tokens) < 6 or tokens[1] != '{' or tokens[3] != '}' or tokens[4] != '{' or tokens[6] != '}':
@@ -102,17 +102,35 @@ class LatexParser:
 
                 expression_node = self.parse_expression(expression_info['tokens'])
                 return LimitNode(expression_node, variable, limit_point)
-
+        
         if tokens[0] == '\\int':
-            # Parse the definite integral \int_{a}^{b} expression dx
-            bounds_info = self._extract_between_braces(tokens, 1)  # Extract bounds
-            expression_info = self._extract_between_braces(tokens, bounds_info['end'] + 1)
+            # Handle definite integral \int_{a}^{b} expression dx
+            if tokens[1] != '_':
+                raise ParseException("Expected '_' after \\int for bounds.")
+            
+            # Extract lower bound
+            lower_bound_info = self._extract_between_braces(tokens, 2)
+            lower_bound = float(lower_bound_info['tokens'][0])  # Get the lower bound value
 
-            lower_bound = float(bounds_info['tokens'][0])
-            upper_bound = float(bounds_info['tokens'][1])
-            expr_node = self.parse_expression(expression_info['tokens'])
+            if tokens[lower_bound_info['end']] != '^':
+                raise ParseException("Expected '^' for upper bound after lower bound.")
+            
+            # Extract upper bound
+            upper_bound_info = self._extract_between_braces(tokens, lower_bound_info['end'] + 1)
+            upper_bound = float(upper_bound_info['tokens'][0])  # Get the upper bound value
 
-            return IntegralNode(expr_node, lower_bound, upper_bound)
+            # Now parse the expression (integrand) directly
+            expression_start_index = upper_bound_info['end'] + 1
+            expression_tokens = tokens[expression_start_index:]
+
+            if not expression_tokens:
+                raise ParseException("Expected integrand after bounds.")
+
+            # Parse the integrand (expression being integrated)
+            expression_node = self.parse_expression(expression_tokens)
+
+            return IntegralNode(expression_node, lower_bound, upper_bound, 'x')  # Assuming 'x' is the variable for now
+
 
         # Handle binary operations (e.g., x ^ 2)
         for operator in ('^', '*', '/', '+', '-'):
@@ -125,6 +143,7 @@ class LatexParser:
                 return OperationNode(operator, left, right)
 
         raise ParseException("Unsupported or complex expression format.")
+
 
     def _extract_between_braces(self, tokens: List[str], start_index: int) -> dict:
         """
