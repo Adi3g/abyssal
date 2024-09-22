@@ -53,3 +53,16 @@ class TestMathEngine(unittest.TestCase):
         """Test division exception."""
         result = self.engine.evaluate("\\frac{x}{y}", {'x': 9, 'y': 3})
         self.assertEqual(result, 3,)
+
+    def test_evaluate_limit(self):
+        """
+        Test evaluating a limit expression \lim_{x \to 0} \frac{\sin(x)}{x}.
+        """
+        # LaTeX expression for \lim_{x \to 0} \frac{\sin(x)}{x}
+        expression = "\\lim_{x \\to 0} \\frac{\\sin{x}}{x}"
+        
+        # Evaluate the limit expression
+        result = self.engine.evaluate(expression, {})
+
+        # Expected result is 1 (the known result of the limit)
+        self.assertAlmostEqual(result, 1.0, places=5)
